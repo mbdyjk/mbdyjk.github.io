@@ -26,7 +26,7 @@ analytics:
   google:
     id: G-MX9ML714G7
   goatcounter:
-    id: null
+    id: everlog
   umami:
     id: null
     domain: null
@@ -38,7 +38,7 @@ analytics:
   fathom:
     id: null
 pageviews:
-  provider: null
+  provider: goatcounter
 theme_mode: null
 cdn: null
 avatar: "/assets/img/profile.jpg"
