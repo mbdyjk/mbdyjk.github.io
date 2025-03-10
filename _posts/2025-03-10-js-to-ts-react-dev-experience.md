@@ -71,7 +71,7 @@ JavaScript로 React를 개발하다가 TypeScript로 전환하면서 학습한 �
     npm run dev
     ```
 
-## 🌟 주요 타입 예시
+## ✨ 주요 타입 예시
 - `boolean`: `let isDone: boolean = false;`
 
 - `number`: `let integer: number = 6;`
@@ -339,7 +339,7 @@ class Stack<T> {
 
     ex) 비동기 컴포넌트가 로드될 때까지 대체 UI 제공
 
-```typescript
+```tsx
 import React, { Suspense } from 'react';
 
 const LazyComponent = React.lazy(() => import('./LazyComponent'));
