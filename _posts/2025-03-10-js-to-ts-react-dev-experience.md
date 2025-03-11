@@ -5,7 +5,6 @@ categories: [React, TypeScript, 학습]
 tags: [React, TypeScript, 학습]
 ---
 
-# JS에서 TS로! React 개발 경험 변화기
 JavaScript로 React를 개발하다가 TypeScript로 전환하면서 학습한 내용을 정리한다.
 
 ## 🧐 왜 TypeScript로 전환했을까?

@@ -1,11 +1,10 @@
 ---
 title: "Next.js 여정의 첫걸음 👣"
-date: 2025-03-10
+date: 2025-03-11
 categories: [Next.js, React, TypeScript, 학습]
 tags: [Next.js, React, TypeScript, 학습]
 ---
 
-# Next.js 여정의 첫걸음 👣
 React 기반의 **프레임워크**인 Next.js에 대한 기초 내용을 정리한다.
 
 ## 🧐 왜 Next.js를 굳이 사용할까?
