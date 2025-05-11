@@ -312,3 +312,168 @@ WHY?) 성능/단순화 향상
 
 ### 106) 물리 데이터 모델 품질 검토
 - 품질 검토 기준: 정확성, 완전성, 준거성(표준 준수), 최신성(현행 시스템 반영), 일관성, 활용성
+
+### 107) SQL 개념
+- DDL(데이터 정의어): SCHEMA, DOMAIN, TABLE, VIEW, INDEX 정의, 변경, 삭제에 사용하는 언어
+  ex) CREATE, ALTER, DROP
+- DML(데이터 조작어): 데이터 처리에 사용되는 언어
+  ex) SELECT(조건 검색), INSERT(삽입), DELETE(삭제), UPDATE(변경)
+- DCL(데이터 제어어): 데이터 관리 목적으로 사용되는 언어
+  ex) COMMIT(수행 결과 저장, 완료 알림), ROLLBACK(원래 상태 복구), GRANT(사용권한 부여), REVOKE(사용권한 취소)
+
+### 108) DDL
+- CREATE: 스키마, 도메인, 테이블, 인덱스, 뷰 정의
+  
+  ex) CREATE SCHEMA 스키마명 AUTHORIZATION 사용자ID
+
+  ex) CREATE DOMAIN 도메인명 [AS] 데이터타입
+      [DEFAULT 기본값]
+      [CONSTRAINT 제약조건명 CHECK(범위값)]
+
+  ex) CREATE TABLE 테이블명
+      (속성명 데이터타입 [DEFAULT 기본값] [NOT NULL]
+      [PRIMARY KEY(속성명)]
+      [UNIQUE(속성명)]
+      [FOREIGN KEY(속성명)]
+        [REFERENCES 참조테이블(기본키속성명)]
+        [ON DELETE 옵션]
+        [ON UPDATE 옵션]
+      [CONSTRAINT 제약조건명 CHECK(범위값)]);
+
+  ex) CREATE TABLE 신규테이블명 AS SELECT 속성명 FROM 기존테이블명
+
+  ex) CREATE VIEW 뷰명[(속성명)] AS SELECT 속성명
+  
+  ex) CREATE [UNIQUE] INDEX 인덱스명
+      ON 테이블명(속성명 [ASC|DESC]) [CLUSTER]; -> 클러스터드 옵션은 검색을 빠르게 하지만 삽입/삭제시 재정렬 발생
+- ALTER: 테이블 정의 변경(열 추가, 기본값 변경, 속성 삭제)
+  
+  ex) ALTER TABLE 테이블명 ADD 속성명 데이터타입 [DEFAULT 기본값];
+
+  ex) ALTER TABLE 테이블명 ALTER 속성명 [SET DEFAULT 기본값];
+
+  ex) ALTER TABLE 테이블명 DROP COLUMN 속성명 [CASCADE];
+- DROP: 스키마, 도메인, 테이블, 뷰, 인덱스, 제약 조건 제거
+  
+  ex) DROP 대상 이름 [CASACADE|RESTRICT]
+  CASACADE는 제거할 요소를 참조하는 모든 개체를 함께 제거, RESTRICT는 참조중일시 제거 취소
+
+### 109) DCL
+- GRANT: 권한 부여
+- REVOKE: 권한 취소
+  - 사용자등급 지정/해제: GRANT 사용자등급 TO 사용자ID/REVOKE 사용자등급 FROM 사용자ID
+  - 테이블 및 속성에 대한 권한 부여/취소: GRANT 권한리스트 ON 개체 TO 사용자/REVOKE 권한리스트 ON 개체 FROM 사용자
+    - WITH GRANT OPTION 추가시 부여받은 권한을 다른 사용자에게 다시 부여할 수 있음
+    - GRANT OPTION FOR: 다른 사용자에게 권한 부여할 수 있는 권한 취소
+    - CASACADE: 권한 취소시 다른 사용자에게 부여한 권한도 연쇄적으로 취소
+- COMMIT: 명령에 의해 수행된 결과를 실제 물리 디스크에 저장, 완료되었음을 관리자에게 알림
+- ROLLBACK: 커밋되지 않은 변경 취소, 이전상태로 복구
+- SAVEPOINT: 롤백할 저장점 지정
+
+### 110) DML
+: 질의어를 통한 데이터 처리
+- 삽입문: 투플 삽입
+  - 방식: **INSERT INTO** 테이블명([속성명]) VALUES (값);
+- 삭제문: 투플 제거
+  - 방식: **DELETE FROM** 테이블명 [WHERE 조건];
+- 갱신문: 투플 내용 변경
+  - 방식: **UPDATE** 테이블명 SET 속성명 = 데이터 [WHERE 조건];
+
+### 111) DML-SELECT-1
+- 형식
+  SELECT [PREDICATE] [테이블명.]속성명 [AS 별칭][[테이블명].속성명]
+  [,그룹함수(속성명)]
+  [,WINDOW함수 OVER (PARTITION BY 속성명 ORDERBY 속성명)]
+  FROM 테이블명
+  [WHERE 조건]
+  [GROUP BY 속성명]
+  [HAVING 그룹조건]
+  [ORDER BY 속성명 [ASC|DESC]];
+- 설명
+  - PREDICATE: 불러올 투플 수 제한(ALL, DISTINCT, DISTINCTROW, TOP)
+  - * : 불러올 속성명에 모든 속성 지정
+  - AS: 결과 테이블의 속성명 별칭 지정
+  - WHERE 조건문에 AND, OR, NOT 논리연산자와 LIKE(%로 시작/종료/포함 조건 확인), BETWEEN(-AND), IS 등의 연산자로 조건문 복잡하게 구성 가능
+- 하위 질의: 조건절의 질의 먼저 수행하고 피연산자로 사용, 작업이 2개 이상일 때 사용
+
+### 112) DML-SELECT-2
+- 그룹 함수: 그룹별로 속성 값 집계
+  종류: COUNT, SUM, AVG, MAX, MIN, STDDEV(표준편차), VARIANCE(분산), ROLLUP(그룹별 소계), CUBE(모든 조합의 그룹별 소계)
+- WINDOW 함수: GROUP BY절을 이용하지 않고 속성 집계할 함수, PARTITION BY로 함수 범위 지정, **일련 번호/순위** 구하기, OVER와 같이 사용
+  종류: ROW_NUMBER(레코드 일련번호), RANK(순위), DENSE_RANK(공동 순위 무시한 순위)
+- 집합 연산자 이용한 통합 질의
+  - UNION: 두 SELECT문 조회 결과 합집합
+  - UNION ALL: 두 SELECT문 조회 결과 중복 포함 출력
+  - INTERSECT: 두 SELECT문 조회 결과 교집합
+  - EXCEPT: 두 SELECT문 조회 결과 차집합
+
+### 113) DML-JOIN
+- JOIN: 두 릴레이션을 **공통 속성** 기준으로 합쳐 반환
+  - INNER JOIN
+    - EQUI JOIN: 공통 속성 기준으로 equal 비교를 하여 같은 값을 가지는 행을 연결해 결과 생성
+    방식: WHERE(=)문 사용, NATURAL JOIN (테이블명), JOIN 테이블명 USING(속성명) - FROM과 같이 사용
+    - NON-EQUI JOIN: equal 비교가 아닌 나머지 비교 연산자로 join
+  - OUTER JOIN: JOIN 조건을 만족하지 않는 투플도 결과로 출력 - FROM과 같이 사용
+    - LEFT OUTER JOIN: 좌측 릴레이션 모두 표시
+    - RIGHT OUTER JOIN: 우측 릴레이션 모두 표시
+    - FULL OTHER JOIN: 좌측/우측 모두 표시
+  - SELF JOIN: 같은 테이블에서 2개의 속성 연결
+
+### 114) 프로시저
+: 절차형 SQL(프로그래밍 언어 같이 연속적 실행이나 제어 가능한 SQL) 사용하는 트랜잭션 언어, DB에 저장, 블록 내 다른 사용자 정의 함수나 프로시저 호출
+- 구성 요소: DECLARE, BEGIN/END, CONTROL(처리, 조건문/반복문), SQL, EXCEPTION(BEGIN~END 사이 예외 처리), TRANSACTION(DB 적용 여부)
+- CREATE으로 프로시저 생성(OR REPLACE로 기존 대체), EXECUTE/EXEC/CALL로 프로시저 호출, IN/OUT/INOUT으로 입출력 데이터 정의
+
+### 115) 트리거
+- 생성방식: 동작시기(테이블 변경시점 기준 AFTER/BEFORE), 트리거 적용 테이블(NEW/OLD), FOR EACH ROW(각 투플마다 트리거 적용)
+
+### 116) 사용자 정의 함수
+: 일련의 작업 처리, 단일값 출력, DML 문에 포함되어 실행, 파라미터를 통해 입력만 가능, SELECT 명령만 가능
+
+### 117) DBMS 접속 기술
+: 응용 시스템(웹 서버, WAS) 매개로 DBMS에 접속, 응용 시스템은 단말기를 통해 요청을 전달받아 정해진 로직에 따라 변환하여 전달
+- JDBC(Java 기반, 썬 마이크로시스템, 드라이버 필요), ODBC(마이크로소프트, 다양한 DB 접근, 드라이버 필요, 종류 몰라도 됨), MyBatis(JDBC 단순화, SQL Mapping 기반 오픈 소스 접속 프레임워크, sql 거의 그대로 사용 가능)
+- 정적 SQL(커서 처리, 빠름, 사전 검사 가능) VS 동적 SQL(문자열 변수에 담음, NVL(null 처리) 사용하지 않음, 느리고 사전 검사 불가)
+
+### 118) SQL 테스트
+- 단문 SQL 테스트
+  - DESC: 테이블 정보 확인
+  - SHOW: 접근 권한 확인
+- 절차형 SQL 테스트
+  - SHOW ERRORS 명령으로 오류 내용 확인
+
+### 119) ORM
+: 객체와 관계형 데이터베이스의 데이터 연결 기술
+- 특징: ORM으로 생성된 가상의 객체들은 DB와 독립적 -> 재사용성, 유지보수 용이, 간단하게 데이터 조작 및 연결 가능
+
+### 120) 쿼리 성능 최적화
+- 방법: 성능 측정 도구인 APM 사용, 옵티마이저가 수립한 실행 계획 검토
+- RBO(규칙 기반 옵티마이저): 규칙에 정의된 우선순위, 개발자 숙련도에 의존, 예측 상대적 쉬움
+- CBO(비용 기반 옵티마이저): 비용에 따른 우선순위, 옵티마이저 예측에 의존, 예측 복잡
+- 실행 계획: EXPLAIN 명령어를 통해 확인 가능, 조인/검색/필터/정렬 등의 연산 순서 확인
+- 쿼리 성능 최적화: SQL 코드와 인덱스 재구성 작업
+  - SQL 코드 재구성 방법: WHERE로 범위 좁히기, WHERE에 연산자 사용 자제(인덱스 활용 불가해짐), 특정 데이터 존재 확인시 EXISTS 사용, 옵티마이저 실행 계획 잘못되었다고 판단할 경우 힌트 활용
+  - 인덱스 재구성 방법: 인덱스 추가 및 열 순서 변경, 읽기로만 사용되는 테이블일 경우 IOT 구성 고려, 불필요한 인덱스 제거
+
+### 121) 데이터 전환
+- 데이터 전환: 기존 정보 시스템 데이터를 추출하여 새로 개발할 정보 시스템에서 운영할 수 있게 변환 후 적재
+- 데이터 전환 계획서: 데이터 전환 작업에 필요한 모든 계획 기록
+
+### 122) 데이터 전환 계획서 작성
+- 작성 방법: 데이터 전환 목표는 간결하게 정의, 데이터 전환 환경은 원천 시스템과 목적 시스템의 구성도/전환 단계별 DISK 사용량 기술, 조직도 작성시 작업자별 역할 상세히 정리, 일정 작성시 작업별 상세 일정 수립
+
+### 123) 데이터 전환 방안
+- 방안 작성 방법: 데이터 흐름도 작성, 대량의 데이터 테이블은 미리 작성, 전환 프로그램은 목록별 작성, 단위 업무별로 전제조건과 함께 작성
+
+### 124) 데이터 검증
+- 검증 방법: 로그 검증, 기본 항목 검증, 응용 프로그램 검증, 응용 데이터 검증, 값 검증
+
+### 125) 오류 데이터 측정 및 정제
+- 오류 데이터 측정: 원천 데이터를 분석하여 정합성 여부 확인 및 오류 데이터 유형 및 건수 측정
+- 오류 데이터 분석: 상태(Open/Assigned/Fixed/Closed/Deferred(연기)/Classified(오류아님)), 심각도
+- 오류 데이터 정제: 원천 데이터 정제 및 전환 프로그램 수정
+
+### 126) 데이터 정제요청서 및 정제보고서
+- 데이터 정제요청서: 원천 데이터와 원천 프로그램의 수정을 위해 정제와 관련된 내용 문서화
+- 데이터 정제보고서: 정제 결과를 확인한 후 결과 반영 보고서
+  - 특징: 정제ID별로 작성, 육안으로 일일이 비교, 오류 데이터 원인과 대응 방안 함께 작성
